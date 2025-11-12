@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Github, Mail, Globe, ArrowUpRight, Menu, X, Linkedin, Instagram } from 'lucide-react'
 
@@ -9,21 +9,75 @@ function useProjects() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  const localSamples = useMemo(() => ([
+    {
+      _id: 'local-1',
+      title: 'Landing Page Startup',
+      subtitle: 'UI modern dengan animasi halus',
+      description: 'Halaman arahan cepat dan responsif, dibangun dengan React, Tailwind, dan Framer Motion.',
+      tags: ['React', 'Tailwind', 'Framer Motion'],
+      image_url: 'https://images.unsplash.com/photo-1522071901873-411886a10004?q=80&w=1600&auto=format&fit=crop',
+      demo_url: '#',
+      repo_url: '#',
+      featured: true,
+    },
+    {
+      _id: 'local-2',
+      title: 'Dashboard Analitik',
+      subtitle: 'Visualisasi data real-time',
+      description: 'Dashboard interaktif dengan chart, filter, dan dark mode.',
+      tags: ['React', 'API', 'Charts'],
+      image_url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1600&auto=format&fit=crop',
+      demo_url: '#',
+      repo_url: '#',
+      featured: false,
+    },
+    {
+      _id: 'local-3',
+      title: 'E-Commerce Mini',
+      subtitle: 'Katalog dan keranjang',
+      description: 'Fitur katalog, pencarian, dan checkout mock terintegrasi API.',
+      tags: ['FastAPI', 'MongoDB', 'React'],
+      image_url: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=1600&auto=format&fit=crop',
+      demo_url: '#',
+      repo_url: '#',
+      featured: false,
+    },
+  ]), [])
+
   useEffect(() => {
-    const fetchData = async () => {
+    let cancelled = false
+
+    const fetchProjects = async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/api/projects`)
         const data = await res.json()
-        setItems(data.items || [])
+        if (cancelled) return
+        const list = data.items || []
+        if (list.length > 0) {
+          setItems(list)
+        } else {
+          // Auto-seed jika kosong, lalu coba ambil ulang
+          try {
+            await fetch(`${BACKEND_URL}/api/seed`, { method: 'POST' })
+            const res2 = await fetch(`${BACKEND_URL}/api/projects`)
+            const data2 = await res2.json()
+            if (!cancelled) setItems(data2.items || localSamples)
+          } catch {
+            if (!cancelled) setItems(localSamples)
+          }
+        }
       } catch (e) {
-        setError('Gagal memuat proyek. Menampilkan contoh lokal.')
-        setItems([])
+        setError('Gagal memuat proyek dari server. Menampilkan contoh lokal.')
+        setItems(localSamples)
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
-    fetchData()
-  }, [])
+
+    fetchProjects()
+    return () => { cancelled = true }
+  }, [localSamples])
 
   return { items, loading, error }
 }
@@ -68,9 +122,16 @@ function Navbar({ onContact }) {
 function HeroProfile() {
   return (
     <section id="home" className="relative w-full overflow-hidden pt-28">
+      <div className="pointer-events-none absolute inset-0 -z-10 opacity-60 bg-[radial-gradient(600px_200px_at_10%_10%,rgba(99,102,241,0.15),transparent),radial-gradient(600px_200px_at_90%_20%,rgba(236,72,153,0.15),transparent)]" />
       <div className="mx-auto max-w-7xl px-4">
         <div className="grid md:grid-cols-2 gap-10 items-center">
-          <div className="order-2 md:order-1">
+          <motion.div
+            className="order-2 md:order-1"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.6 }}
+          >
             <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-gray-900">
               Halo, saya <span className="bg-gradient-to-br from-indigo-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent">Nama Anda</span>
             </h1>
@@ -78,8 +139,8 @@ function HeroProfile() {
               Saya fokus pada pembuatan website yang cepat, rapi, dan mudah digunakan. Portofolio ini menampilkan beberapa proyek terbaik saya.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <a href="#projects" className="inline-flex items-center gap-2 rounded-2xl bg-gray-900 px-5 py-3 text-white hover:bg-black">Lihat Proyek</a>
-              <a href="#contact" className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-gray-900 border border-gray-200 hover:bg-gray-50">Kontak</a>
+              <a href="#projects" className="inline-flex items-center gap-2 rounded-2xl bg-gray-900 px-5 py-3 text-white hover:bg-black w-full sm:w-auto justify-center">Lihat Proyek</a>
+              <a href="#contact" className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-gray-900 border border-gray-200 hover:bg-gray-50 w-full sm:w-auto justify-center">Kontak</a>
             </div>
             <div className="mt-8 flex flex-wrap gap-3 text-sm">
               <span className="rounded-full bg-gray-100 px-3 py-1">React</span>
@@ -88,13 +149,19 @@ function HeroProfile() {
               <span className="rounded-full bg-gray-100 px-3 py-1">MongoDB</span>
               <span className="rounded-full bg-gray-100 px-3 py-1">Framer Motion</span>
             </div>
-            <div className="mt-6 flex gap-3">
-              <a href="mailto:you@example.com" className="inline-flex items-center gap-2 rounded-xl border px-4 py-2"><Mail size={16} /> Email</a>
-              <a href="https://github.com" target="_blank" className="inline-flex items-center gap-2 rounded-xl border px-4 py-2"><Github size={16} /> GitHub</a>
-              <a href="https://linkedin.com" target="_blank" className="inline-flex items-center gap-2 rounded-xl border px-4 py-2"><Linkedin size={16} /> LinkedIn</a>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <a href="mailto:you@example.com" className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 w-full sm:w-auto justify-center"><Mail size={16} /> Email</a>
+              <a href="https://github.com" target="_blank" className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 w-full sm:w-auto justify-center"><Github size={16} /> GitHub</a>
+              <a href="https://linkedin.com" target="_blank" className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 w-full sm:w-auto justify-center"><Linkedin size={16} /> LinkedIn</a>
             </div>
-          </div>
-          <div className="order-1 md:order-2">
+          </motion.div>
+          <motion.div
+            className="order-1 md:order-2"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
             <div className="relative mx-auto w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80">
               <img
                 src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop"
@@ -102,7 +169,7 @@ function HeroProfile() {
                 className="h-full w-full rounded-3xl object-cover border shadow-sm"
               />
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
@@ -111,7 +178,14 @@ function HeroProfile() {
 
 function ProjectCard({ item }) {
   return (
-    <div className="group relative overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition-transform hover:-translate-y-1">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.4 }}
+      whileHover={{ y: -6 }}
+      className="group relative overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm"
+    >
       <div className="aspect-[16/10] overflow-hidden">
         <img src={item.image_url} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
       </div>
@@ -124,7 +198,7 @@ function ProjectCard({ item }) {
         <h3 className="text-xl font-semibold text-gray-900">{item.title}</h3>
         {item.subtitle && <p className="text-sm text-gray-500 mt-1">{item.subtitle}</p>}
         <p className="mt-3 text-gray-700 text-sm">{item.description}</p>
-        <div className="mt-4 flex items-center gap-3">
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           {item.demo_url && (
             <a href={item.demo_url} target="_blank" className="inline-flex items-center gap-1 text-gray-900 hover:underline">
               Demo <ArrowUpRight size={16} />
@@ -136,6 +210,20 @@ function ProjectCard({ item }) {
             </a>
           )}
         </div>
+      </div>
+    </motion.div>
+  )
+}
+
+function ProjectSkeleton() {
+  return (
+    <div className="animate-pulse overflow-hidden rounded-3xl border border-gray-200 bg-white">
+      <div className="aspect-[16/10] bg-gray-100" />
+      <div className="p-5 space-y-3">
+        <div className="h-3 w-24 bg-gray-100 rounded" />
+        <div className="h-4 w-2/3 bg-gray-100 rounded" />
+        <div className="h-3 w-full bg-gray-100 rounded" />
+        <div className="h-3 w-5/6 bg-gray-100 rounded" />
       </div>
     </div>
   )
@@ -151,26 +239,35 @@ function Projects() {
       </div>
       <div className="relative z-10 mx-auto max-w-7xl px-4">
         <div className="mb-10 flex items-end justify-between">
-          <div>
+          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
             <h2 className="text-3xl sm:text-4xl font-bold">Proyek</h2>
             <p className="text-gray-600 mt-2">Pilihan karya yang pernah saya kerjakan.</p>
-          </div>
+          </motion.div>
           <a href="#contact" className="hidden sm:inline-flex items-center gap-2 rounded-2xl border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50">
             Butuh sesuatu? Hubungi saya <ArrowUpRight size={16} />
           </a>
         </div>
 
-        {loading && <p className="text-gray-500">Memuat proyek...</p>}
-        {error && <p className="text-red-600">{error}</p>}
+        {error && (
+          <p className="text-red-600 mb-4">{error}</p>
+        )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {items.map((item) => (
-            <ProjectCard key={item._id} item={item} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <ProjectSkeleton key={i} />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {items.map((item) => (
+              <ProjectCard key={item._id} item={item} />
+            ))}
+          </div>
+        )}
 
         {!loading && items.length === 0 && (
-          <div className="rounded-2xl border border-dashed p-10 text-center text-gray-600">
+          <div className="rounded-2xl border border-dashed p-10 text-center text-gray-600 mt-8">
             Belum ada data proyek. Klik tombol di bawah untuk menambahkan data contoh.
             <div className="mt-4">
               <a href={`${BACKEND_URL}/api/seed`} target="_blank" className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2 text-white">
@@ -209,7 +306,13 @@ function Contact() {
   return (
     <section id="contact" className="py-20">
       <div className="mx-auto max-w-3xl px-4">
-        <div className="rounded-3xl border bg-white p-6 shadow-sm">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="rounded-3xl border bg-white p-6 shadow-sm"
+        >
           <h3 className="text-2xl font-bold">Hubungi Saya</h3>
           <p className="mt-2 text-gray-600 text-sm">Punya project atau ide? Kirim pesan, saya akan balas secepatnya.</p>
           <form onSubmit={handleSubmit} className="mt-6 grid grid-cols-1 gap-4">
@@ -222,13 +325,13 @@ function Contact() {
             {status === 'success' && <p className="text-green-600 text-sm">Terkirim! Terima kasih.</p>}
             {status === 'error' && <p className="text-red-600 text-sm">Terjadi kesalahan. Coba lagi.</p>}
           </form>
-          <div className="mt-6 flex gap-3 text-sm">
-            <a href="mailto:you@example.com" className="inline-flex items-center gap-2 rounded-xl border px-3 py-2"><Mail size={16} /> Email</a>
-            <a href="https://github.com" target="_blank" className="inline-flex items-center gap-2 rounded-xl border px-3 py-2"><Github size={16} /> GitHub</a>
-            <a href="https://linkedin.com" target="_blank" className="inline-flex items-center gap-2 rounded-xl border px-3 py-2"><Linkedin size={16} /> LinkedIn</a>
-            <a href="https://instagram.com" target="_blank" className="inline-flex items-center gap-2 rounded-xl border px-3 py-2"><Instagram size={16} /> Instagram</a>
+          <div className="mt-6 flex flex-wrap gap-3 text-sm">
+            <a href="mailto:you@example.com" className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 w-full sm:w-auto justify-center"><Mail size={16} /> Email</a>
+            <a href="https://github.com" target="_blank" className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 w-full sm:w-auto justify-center"><Github size={16} /> GitHub</a>
+            <a href="https://linkedin.com" target="_blank" className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 w-full sm:w-auto justify-center"><Linkedin size={16} /> LinkedIn</a>
+            <a href="https://instagram.com" target="_blank" className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 w-full sm:w-auto justify-center"><Instagram size={16} /> Instagram</a>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   )
@@ -263,7 +366,7 @@ export default function App() {
       <Projects />
       <Contact />
       <footer className="py-10">
-        <div className="mx-auto max-w-7xl px-4 flex items-center justify-between text-sm text-gray-600">
+        <div className="mx-auto max-w-7xl px-4 flex flex-col sm:flex-row gap-4 sm:gap-0 sm:items-center justify-between text-sm text-gray-600">
           <span>© {new Date().getFullYear()} Nama Anda</span>
           <div className="flex items-center gap-4">
             <a href="https://yourdomain.com" className="inline-flex items-center gap-1 hover:underline"><Globe size={14} /> yourdomain.com</a>
