@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import Spline from '@splinetool/react-spline'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Github, Mail, Globe, MoveRight, ArrowUpRight, Menu, X, Linkedin, Instagram } from 'lucide-react'
+import { Github, Mail, Globe, ArrowUpRight, Menu, X, Linkedin, Instagram } from 'lucide-react'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
 
@@ -35,13 +34,13 @@ function Navbar({ onContact }) {
     <div className="fixed top-0 left-0 right-0 z-50">
       <div className="mx-auto max-w-7xl px-4">
         <div className="mt-6 flex items-center justify-between rounded-2xl border border-white/20 bg-white/70 p-3 backdrop-blur-xl shadow-lg">
-          <div className="flex items-center gap-3">
+          <a href="#home" className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 via-fuchsia-500 to-amber-400" />
             <span className="font-semibold">Portfolio</span>
-          </div>
+          </a>
           <div className="hidden md:flex items-center gap-6 text-sm text-gray-700">
+            <a href="#home" className="hover:text-gray-900">Profil</a>
             <a href="#projects" className="hover:text-gray-900">Proyek</a>
-            <a href="#about" className="hover:text-gray-900">Tentang</a>
             <button onClick={onContact} className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2 text-white hover:bg-black">
               Hubungi <ArrowUpRight size={16} />
             </button>
@@ -53,8 +52,8 @@ function Navbar({ onContact }) {
         {open && (
           <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="md:hidden mx-4 rounded-b-2xl border border-t-0 border-white/20 bg-white/80 backdrop-blur-xl">
             <div className="flex flex-col p-4 gap-3 text-sm">
+              <a href="#home" onClick={() => setOpen(false)}>Profil</a>
               <a href="#projects" onClick={() => setOpen(false)}>Proyek</a>
-              <a href="#about" onClick={() => setOpen(false)}>Tentang</a>
               <button onClick={() => { onContact(); setOpen(false) }} className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2 text-white">
                 Hubungi <ArrowUpRight size={16} />
               </button>
@@ -66,25 +65,44 @@ function Navbar({ onContact }) {
   )
 }
 
-function Hero() {
+function HeroProfile() {
   return (
-    <section className="relative min-h-[90vh] w-full overflow-hidden pt-28">
-      <div className="absolute inset-0">
-        <Spline scene="https://prod.spline.design/VJLoxp84lCdVfdZu/scene.splinecode" style={{ width: '100%', height: '100%' }} />
-      </div>
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/20 via-white/40 to-white" />
-      <div className="relative z-10 mx-auto max-w-7xl px-4">
-        <div className="max-w-2xl pt-8">
-          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-4xl sm:text-6xl font-extrabold tracking-tight text-gray-900">
-            Halo, saya <span className="bg-gradient-to-br from-indigo-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent">Nama Anda</span>
-          </motion.h1>
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="mt-4 text-gray-700 text-lg">
-            Software Engineer yang suka membangun pengalaman web interaktif, clean, dan playful.
-          </motion.p>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }} className="mt-8 flex flex-wrap gap-3">
-            <a href="#projects" className="inline-flex items-center gap-2 rounded-2xl bg-gray-900 px-5 py-3 text-white hover:bg-black">Lihat Proyek <MoveRight size={16} /></a>
-            <a href="#about" className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-gray-900 border border-gray-200 hover:bg-gray-50">Tentang Saya</a>
-          </motion.div>
+    <section id="home" className="relative w-full overflow-hidden pt-28">
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="grid md:grid-cols-2 gap-10 items-center">
+          <div className="order-2 md:order-1">
+            <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-gray-900">
+              Halo, saya <span className="bg-gradient-to-br from-indigo-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent">Nama Anda</span>
+            </h1>
+            <p className="mt-4 text-gray-700 text-lg">
+              Saya fokus pada pembuatan website yang cepat, rapi, dan mudah digunakan. Portofolio ini menampilkan beberapa proyek terbaik saya.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a href="#projects" className="inline-flex items-center gap-2 rounded-2xl bg-gray-900 px-5 py-3 text-white hover:bg-black">Lihat Proyek</a>
+              <a href="#contact" className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-gray-900 border border-gray-200 hover:bg-gray-50">Kontak</a>
+            </div>
+            <div className="mt-8 flex flex-wrap gap-3 text-sm">
+              <span className="rounded-full bg-gray-100 px-3 py-1">React</span>
+              <span className="rounded-full bg-gray-100 px-3 py-1">FastAPI</span>
+              <span className="rounded-full bg-gray-100 px-3 py-1">Tailwind</span>
+              <span className="rounded-full bg-gray-100 px-3 py-1">MongoDB</span>
+              <span className="rounded-full bg-gray-100 px-3 py-1">Framer Motion</span>
+            </div>
+            <div className="mt-6 flex gap-3">
+              <a href="mailto:you@example.com" className="inline-flex items-center gap-2 rounded-xl border px-4 py-2"><Mail size={16} /> Email</a>
+              <a href="https://github.com" target="_blank" className="inline-flex items-center gap-2 rounded-xl border px-4 py-2"><Github size={16} /> GitHub</a>
+              <a href="https://linkedin.com" target="_blank" className="inline-flex items-center gap-2 rounded-xl border px-4 py-2"><Linkedin size={16} /> LinkedIn</a>
+            </div>
+          </div>
+          <div className="order-1 md:order-2">
+            <div className="relative mx-auto w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80">
+              <img
+                src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop"
+                alt="Foto Profil"
+                className="h-full w-full rounded-3xl object-cover border shadow-sm"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -93,7 +111,7 @@ function Hero() {
 
 function ProjectCard({ item }) {
   return (
-    <motion.div whileHover={{ y: -6 }} className="group relative overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+    <div className="group relative overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition-transform hover:-translate-y-1">
       <div className="aspect-[16/10] overflow-hidden">
         <img src={item.image_url} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
       </div>
@@ -119,7 +137,7 @@ function ProjectCard({ item }) {
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -134,8 +152,8 @@ function Projects() {
       <div className="relative z-10 mx-auto max-w-7xl px-4">
         <div className="mb-10 flex items-end justify-between">
           <div>
-            <h2 className="text-3xl sm:text-4xl font-bold">Proyek Pilihan</h2>
-            <p className="text-gray-600 mt-2">Karya-karya terbaik yang pernah saya buat.</p>
+            <h2 className="text-3xl sm:text-4xl font-bold">Proyek</h2>
+            <p className="text-gray-600 mt-2">Pilihan karya yang pernah saya kerjakan.</p>
           </div>
           <a href="#contact" className="hidden sm:inline-flex items-center gap-2 rounded-2xl border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50">
             Butuh sesuatu? Hubungi saya <ArrowUpRight size={16} />
@@ -161,41 +179,6 @@ function Projects() {
             </div>
           </div>
         )}
-      </div>
-    </section>
-  )
-}
-
-function About() {
-  return (
-    <section id="about" className="py-20">
-      <div className="mx-auto max-w-5xl px-4 grid md:grid-cols-2 gap-10 items-center">
-        <div className="rounded-3xl border bg-white p-6 shadow-sm">
-          <h3 className="text-2xl font-bold">Tentang Saya</h3>
-          <p className="mt-3 text-gray-700">
-            Saya adalah developer yang fokus pada pengalaman pengguna, animasi halus, dan desain yang tidak biasa namun tetap nyaman dilihat.
-            Terbiasa membangun antarmuka modern dengan React dan sistem backend yang rapi dengan FastAPI.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3 text-sm">
-            <span className="rounded-full bg-gray-100 px-3 py-1">React</span>
-            <span className="rounded-full bg-gray-100 px-3 py-1">FastAPI</span>
-            <span className="rounded-full bg-gray-100 px-3 py-1">Tailwind</span>
-            <span className="rounded-full bg-gray-100 px-3 py-1">MongoDB</span>
-            <span className="rounded-full bg-gray-100 px-3 py-1">Framer Motion</span>
-          </div>
-        </div>
-        <div className="rounded-3xl border bg-white p-6 shadow-sm">
-          <h3 className="text-2xl font-bold">Info Singkat</h3>
-          <ul className="mt-3 space-y-2 text-gray-700 text-sm">
-            <li>Domisili: Indonesia</li>
-            <li>Keahlian: Frontend, Backend, UI/UX</li>
-            <li>Minat: Web interaktif, animasi, produk digital</li>
-          </ul>
-          <div className="mt-6 flex gap-3">
-            <a href="#contact" className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2 text-white">Buka Kontak <ArrowUpRight size={16} /></a>
-            <a href="https://github.com" target="_blank" className="inline-flex items-center gap-2 rounded-xl border px-4 py-2"><Github size={16} /> GitHub</a>
-          </div>
-        </div>
       </div>
     </section>
   )
@@ -276,9 +259,8 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <Navbar onContact={() => setContactOpen(true)} />
-      <Hero />
+      <HeroProfile />
       <Projects />
-      <About />
       <Contact />
       <footer className="py-10">
         <div className="mx-auto max-w-7xl px-4 flex items-center justify-between text-sm text-gray-600">
